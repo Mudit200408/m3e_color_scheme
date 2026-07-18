@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:dynamic_color/dynamic_color.dart';
+import 'package:m3e_color_scheme/m3e_color_scheme.dart';
 
 import 'screens/m3e_dropdown_screen.dart';
 import 'screens/m3e_button_screen.dart';
@@ -14,34 +16,58 @@ void main() {
 }
 
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.system);
+final ValueNotifier<bool> m3eEnabledNotifier = ValueNotifier(true);
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<ThemeMode>(
-      valueListenable: themeNotifier,
-      builder: (context, ThemeMode currentMode, _) {
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
-          title: 'M3E Card List Demo',
-          themeMode: currentMode,
-          theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: Colors.deepPurple,
-              brightness: Brightness.light,
-            ),
-            useMaterial3: true,
-          ),
-          darkTheme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: Colors.deepPurple,
-              brightness: Brightness.dark,
-            ),
-            useMaterial3: true,
-          ),
-          home: const ExampleHomePage(),
+    return DynamicColorBuilder(
+      builder: (lightDynamic, darkDynamic) {
+        return ValueListenableBuilder<ThemeMode>(
+          valueListenable: themeNotifier,
+          builder: (context, ThemeMode currentMode, _) {
+            return ValueListenableBuilder<bool>(
+              valueListenable: m3eEnabledNotifier,
+              builder: (context, bool m3eEnabled, _) {
+                final lightScheme = m3eEnabled
+                    ? M3EColorScheme.light(
+                        seedColor: lightDynamic?.primary ?? Colors.deepPurple,
+                        systemColorScheme: lightDynamic,
+                      )
+                    : (lightDynamic ?? ColorScheme.fromSeed(
+                        seedColor: Colors.deepPurple,
+                        brightness: Brightness.light,
+                      ));
+
+                final darkScheme = m3eEnabled
+                    ? M3EColorScheme.dark(
+                        seedColor: darkDynamic?.primary ?? Colors.deepPurple,
+                        systemColorScheme: darkDynamic,
+                      )
+                    : (darkDynamic ?? ColorScheme.fromSeed(
+                        seedColor: Colors.deepPurple,
+                        brightness: Brightness.dark,
+                      ));
+
+                return MaterialApp(
+                  debugShowCheckedModeBanner: false,
+                  title: 'M3E Card List Demo',
+                  themeMode: currentMode,
+                  theme: ThemeData(
+                    colorScheme: lightScheme,
+                    useMaterial3: true,
+                  ),
+                  darkTheme: ThemeData(
+                    colorScheme: darkScheme,
+                    useMaterial3: true,
+                  ),
+                  home: const ExampleHomePage(),
+                );
+              },
+            );
+          },
         );
       },
     );
@@ -120,6 +146,33 @@ class ExampleHomePage extends StatelessWidget {
         title: const Text('M3E Component Library'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
+          ValueListenableBuilder<bool>(
+            valueListenable: m3eEnabledNotifier,
+            builder: (context, m3eEnabled, _) {
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'M3E Scheme',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: m3eEnabled
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Switch(
+                    value: m3eEnabled,
+                    onChanged: (val) {
+                      m3eEnabledNotifier.value = val;
+                    },
+                  ),
+                ],
+              );
+            },
+          ),
           IconButton(
             icon: Icon(
               Theme.of(context).brightness == Brightness.light

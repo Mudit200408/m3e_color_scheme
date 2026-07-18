@@ -39,6 +39,7 @@ dependencies:
   m3e_core:
     path: ../../m3e_core
   motor: ^1.1.0
+  dynamic_color: ^1.8.1
 
 dev_dependencies:
   flutter_test:
