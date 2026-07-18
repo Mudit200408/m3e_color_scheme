@@ -16,7 +16,60 @@ void main() {
 }
 
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.system);
-final ValueNotifier<bool> m3eEnabledNotifier = ValueNotifier(true);
+
+class ThemeSettings {
+  final Color seedColor;
+  final M3EColorVariant variant;
+  final double contrastLevel;
+  final bool useM3EColorScheme;
+  final bool useSystemColor;
+
+  ThemeSettings({
+    required this.seedColor,
+    required this.variant,
+    required this.contrastLevel,
+    required this.useM3EColorScheme,
+    required this.useSystemColor,
+  });
+
+  ThemeSettings copyWith({
+    Color? seedColor,
+    M3EColorVariant? variant,
+    double? contrastLevel,
+    bool? useM3EColorScheme,
+    bool? useSystemColor,
+  }) {
+    return ThemeSettings(
+      seedColor: seedColor ?? this.seedColor,
+      variant: variant ?? this.variant,
+      contrastLevel: contrastLevel ?? this.contrastLevel,
+      useM3EColorScheme: useM3EColorScheme ?? this.useM3EColorScheme,
+      useSystemColor: useSystemColor ?? this.useSystemColor,
+    );
+  }
+}
+
+final ValueNotifier<ThemeSettings> themeSettingsNotifier = ValueNotifier(
+  ThemeSettings(
+    seedColor: Colors.deepPurple,
+    variant: M3EColorVariant.expressive,
+    contrastLevel: 0.0,
+    useM3EColorScheme: true,
+    useSystemColor: true,
+  ),
+);
+
+final Map<String, Color> seedColors = {
+  'Purple': Colors.deepPurple,
+  'Indigo': Colors.indigo,
+  'Blue': Colors.blue,
+  'Teal': Colors.teal,
+  'Green': Colors.green,
+  'Yellow': Colors.yellow,
+  'Orange': Colors.orange,
+  'Red': Colors.red,
+  'Pink': Colors.pink,
+};
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -28,28 +81,47 @@ class MyApp extends StatelessWidget {
         return ValueListenableBuilder<ThemeMode>(
           valueListenable: themeNotifier,
           builder: (context, ThemeMode currentMode, _) {
-            return ValueListenableBuilder<bool>(
-              valueListenable: m3eEnabledNotifier,
-              builder: (context, bool m3eEnabled, _) {
-                final lightScheme = m3eEnabled
-                    ? M3EColorScheme.light(
-                        seedColor: lightDynamic?.primary ?? Colors.deepPurple,
-                        systemColorScheme: lightDynamic,
-                      )
-                    : (lightDynamic ?? ColorScheme.fromSeed(
-                        seedColor: Colors.deepPurple,
-                        brightness: Brightness.light,
-                      ));
+            return ValueListenableBuilder<ThemeSettings>(
+              valueListenable: themeSettingsNotifier,
+              builder: (context, ThemeSettings settings, _) {
+                final systemLightColor = lightDynamic?.primary;
+                final systemDarkColor = darkDynamic?.primary;
 
-                final darkScheme = m3eEnabled
-                    ? M3EColorScheme.dark(
-                        seedColor: darkDynamic?.primary ?? Colors.deepPurple,
-                        systemColorScheme: darkDynamic,
+                final lightSeed = (settings.useSystemColor && systemLightColor != null)
+                    ? systemLightColor
+                    : settings.seedColor;
+
+                final darkSeed = (settings.useSystemColor && systemDarkColor != null)
+                    ? systemDarkColor
+                    : settings.seedColor;
+
+                final lightScheme = settings.useM3EColorScheme
+                    ? M3EColorScheme.light(
+                        seedColor: lightSeed,
+                        systemColorScheme: settings.useSystemColor ? lightDynamic : null,
+                        variant: settings.variant,
+                        contrastLevel: settings.contrastLevel,
                       )
-                    : (darkDynamic ?? ColorScheme.fromSeed(
-                        seedColor: Colors.deepPurple,
-                        brightness: Brightness.dark,
-                      ));
+                    : ((settings.useSystemColor && lightDynamic != null)
+                        ? lightDynamic
+                        : ColorScheme.fromSeed(
+                            seedColor: lightSeed,
+                            brightness: Brightness.light,
+                          ));
+
+                final darkScheme = settings.useM3EColorScheme
+                    ? M3EColorScheme.dark(
+                        seedColor: darkSeed,
+                        systemColorScheme: settings.useSystemColor ? darkDynamic : null,
+                        variant: settings.variant,
+                        contrastLevel: settings.contrastLevel,
+                      )
+                    : ((settings.useSystemColor && darkDynamic != null)
+                        ? darkDynamic
+                        : ColorScheme.fromSeed(
+                            seedColor: darkSeed,
+                            brightness: Brightness.dark,
+                          ));
 
                 return MaterialApp(
                   debugShowCheckedModeBanner: false,
@@ -88,7 +160,7 @@ class ExampleHomePage extends StatelessWidget {
     return Card(
       elevation: 0,
       margin: const EdgeInsets.only(bottom: 16),
-      color: cs.surfaceContainerHighest,
+      color: cs.surfaceContainer,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: InkWell(
@@ -138,6 +210,17 @@ class ExampleHomePage extends StatelessWidget {
     );
   }
 
+  void _showThemeSettings(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return const ThemeSettingsSheet();
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -146,32 +229,10 @@ class ExampleHomePage extends StatelessWidget {
         title: const Text('M3E Component Library'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
-          ValueListenableBuilder<bool>(
-            valueListenable: m3eEnabledNotifier,
-            builder: (context, m3eEnabled, _) {
-              return Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'M3E Scheme',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: m3eEnabled
-                          ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Switch(
-                    value: m3eEnabled,
-                    onChanged: (val) {
-                      m3eEnabledNotifier.value = val;
-                    },
-                  ),
-                ],
-              );
-            },
+          IconButton(
+            icon: const Icon(Icons.palette_outlined),
+            onPressed: () => _showThemeSettings(context),
+            tooltip: 'Theme Customizer',
           ),
           IconButton(
             icon: Icon(
@@ -266,6 +327,151 @@ class ExampleHomePage extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class ThemeSettingsSheet extends StatelessWidget {
+  const ThemeSettingsSheet({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+
+    return ValueListenableBuilder<ThemeSettings>(
+      valueListenable: themeSettingsNotifier,
+      builder: (context, settings, _) {
+        return Container(
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+          decoration: BoxDecoration(
+            color: cs.surfaceContainerHigh,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 32,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: cs.outlineVariant,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Theme Settings',
+                style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Enable M3E Color Scheme'),
+                subtitle: const Text('AOSP ColorSpec2026 overrides'),
+                value: settings.useM3EColorScheme,
+                onChanged: (val) {
+                  themeSettingsNotifier.value = settings.copyWith(useM3EColorScheme: val);
+                },
+              ),
+              
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Use System Dynamic Colors'),
+                subtitle: const Text('Syncs with wallpaper colors if supported'),
+                value: settings.useSystemColor,
+                onChanged: (val) {
+                  themeSettingsNotifier.value = settings.copyWith(useSystemColor: val);
+                },
+              ),
+              
+              if (!settings.useSystemColor) ...[
+                const SizedBox(height: 12),
+                Text(
+                  'Manual Seed Color',
+                  style: theme.textTheme.titleSmall,
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 48,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: seedColors.entries.map((entry) {
+                      final isSelected = settings.seedColor == entry.value;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 12),
+                        child: GestureDetector(
+                          onTap: () {
+                            themeSettingsNotifier.value = settings.copyWith(seedColor: entry.value);
+                          },
+                          child: Container(
+                            width: 38,
+                            height: 38,
+                            decoration: BoxDecoration(
+                              color: entry.value,
+                              shape: BoxShape.circle,
+                              border: isSelected
+                                  ? Border.all(color: cs.onSurface, width: 3)
+                                  : null,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
+
+              if (settings.useM3EColorScheme) ...[
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    const Text('Color Variant: '),
+                    const Spacer(),
+                    DropdownButton<M3EColorVariant>(
+                      value: settings.variant,
+                      onChanged: (val) {
+                        if (val != null) {
+                          themeSettingsNotifier.value = settings.copyWith(variant: val);
+                        }
+                      },
+                      items: M3EColorVariant.values.map((v) {
+                        return DropdownMenuItem(
+                          value: v,
+                          child: Text(v.name),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    const Text('Contrast Level: '),
+                    Expanded(
+                      child: Slider(
+                        value: settings.contrastLevel,
+                        min: -1.0,
+                        max: 1.0,
+                        divisions: 8,
+                        label: settings.contrastLevel.toStringAsFixed(2),
+                        onChanged: (val) {
+                          themeSettingsNotifier.value = settings.copyWith(contrastLevel: val);
+                        },
+                      ),
+                    ),
+                    Text(settings.contrastLevel.toStringAsFixed(2)),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        );
+      },
     );
   }
 }
