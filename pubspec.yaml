@@ -1,27 +1,24 @@
 name: m3e_color_scheme
-description: "A new Flutter package project."
+description: "A Flutter package providing AOSP-aligned native color scheme generation and a dynamic_color package mapping fixup for Material 3."
 version: 0.0.1
-homepage:
+homepage: https://github.com/Mudit200408/m3e_color_scheme
+repository: https://github.com/Mudit200408/m3e_color_scheme
+issue_tracker: https://github.com/Mudit200408/m3e_color_scheme/issues
 
 environment:
   sdk: ^3.12.1
-  flutter: ">=1.17.0"
+  flutter: ">=3.22.0"
 
 dependencies:
   flutter:
     sdk: flutter
   material_color_utilities: ^0.13.0
 
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
 
-# For information on the generic Dart part of this file, see the
-# following page: https://dart.dev/tools/pub/pubspec
-
-# The following section is specific to Flutter packages.
 flutter:
 
   # To add assets to your package, add an assets section, like this:

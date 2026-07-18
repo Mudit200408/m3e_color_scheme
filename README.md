@@ -1,9 +1,11 @@
 # M3E Color Scheme
 
+![M3E Intro](docs/color-scheme.png)
+
 A Flutter package providing AOSP-aligned native color scheme generation and a robust fixup for the `dynamic_color` package in Flutter. It correctly populates the newer tone-based Material 3 surface and container roles, guarantees accessibility-compliant `on*Container` contrast mappings (resolving to Tone 30/Tone 90 instead of dull system Tone 10), and enables advanced dynamic variants (such as Expressive, Vibrant, Fidelity, Fruit Salad) with real-time contrast control.
 
 > [!NOTE]
-> `m3e_color_scheme` is a part of the larger **[m3e_core](https://github.com/Mudit200408/m3e_core)** ecosystem.
+> `m3e_color_scheme` is a part of the larger **[m3e_core](https://pub.dev/packages/m3e_core)** ecosystem.
 
 ---
 
@@ -138,7 +140,7 @@ Tonal specification presets for dynamic palette generation:
 
 ## 🐞 Found a bug? or ✨ You have a Feature Request?
 
-Feel free to open an [Issue](https://github.com/Mudit200408/m3e_core/issues) or [Contribute](https://github.com/Mudit200408/m3e_core/pulls) to the project via the main repository.
+Feel free to open an [Issue](https://github.com/Mudit200408/m3e_color_scheme/issues) or [Contribute](https://github.com/Mudit200408/m3e_color_scheme/pulls) to the project via the main repository.
 
 Hope You Love It!
 
