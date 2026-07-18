@@ -52,7 +52,7 @@ class ThemeSettings {
 final ValueNotifier<ThemeSettings> themeSettingsNotifier = ValueNotifier(
   ThemeSettings(
     seedColor: Colors.deepPurple,
-    variant: M3EColorVariant.expressive,
+    variant: M3EColorVariant.tonalSpot,
     contrastLevel: 0.0,
     useM3EColorScheme: true,
     useSystemColor: true,
@@ -87,41 +87,47 @@ class MyApp extends StatelessWidget {
                 final systemLightColor = lightDynamic?.primary;
                 final systemDarkColor = darkDynamic?.primary;
 
-                final lightSeed = (settings.useSystemColor && systemLightColor != null)
+                final lightSeed =
+                    (settings.useSystemColor && systemLightColor != null)
                     ? systemLightColor
                     : settings.seedColor;
 
-                final darkSeed = (settings.useSystemColor && systemDarkColor != null)
+                final darkSeed =
+                    (settings.useSystemColor && systemDarkColor != null)
                     ? systemDarkColor
                     : settings.seedColor;
 
                 final lightScheme = settings.useM3EColorScheme
                     ? M3EColorScheme.light(
                         seedColor: lightSeed,
-                        systemColorScheme: settings.useSystemColor ? lightDynamic : null,
+                        systemColorScheme: settings.useSystemColor
+                            ? lightDynamic
+                            : null,
                         variant: settings.variant,
                         contrastLevel: settings.contrastLevel,
                       )
                     : ((settings.useSystemColor && lightDynamic != null)
-                        ? lightDynamic
-                        : ColorScheme.fromSeed(
-                            seedColor: lightSeed,
-                            brightness: Brightness.light,
-                          ));
+                          ? lightDynamic
+                          : ColorScheme.fromSeed(
+                              seedColor: lightSeed,
+                              brightness: Brightness.light,
+                            ));
 
                 final darkScheme = settings.useM3EColorScheme
                     ? M3EColorScheme.dark(
                         seedColor: darkSeed,
-                        systemColorScheme: settings.useSystemColor ? darkDynamic : null,
+                        systemColorScheme: settings.useSystemColor
+                            ? darkDynamic
+                            : null,
                         variant: settings.variant,
                         contrastLevel: settings.contrastLevel,
                       )
                     : ((settings.useSystemColor && darkDynamic != null)
-                        ? darkDynamic
-                        : ColorScheme.fromSeed(
-                            seedColor: darkSeed,
-                            brightness: Brightness.dark,
-                          ));
+                          ? darkDynamic
+                          : ColorScheme.fromSeed(
+                              seedColor: darkSeed,
+                              brightness: Brightness.dark,
+                            ));
 
                 return MaterialApp(
                   debugShowCheckedModeBanner: false,
@@ -365,36 +371,41 @@ class ThemeSettingsSheet extends StatelessWidget {
               const SizedBox(height: 20),
               Text(
                 'Theme Settings',
-                style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 16),
-              
+
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
                 title: const Text('Enable M3E Color Scheme'),
                 subtitle: const Text('AOSP ColorSpec2026 overrides'),
                 value: settings.useM3EColorScheme,
                 onChanged: (val) {
-                  themeSettingsNotifier.value = settings.copyWith(useM3EColorScheme: val);
+                  themeSettingsNotifier.value = settings.copyWith(
+                    useM3EColorScheme: val,
+                  );
                 },
               ),
-              
+
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
                 title: const Text('Use System Dynamic Colors'),
-                subtitle: const Text('Syncs with wallpaper colors if supported'),
+                subtitle: const Text(
+                  'Syncs with wallpaper colors if supported',
+                ),
                 value: settings.useSystemColor,
                 onChanged: (val) {
-                  themeSettingsNotifier.value = settings.copyWith(useSystemColor: val);
+                  themeSettingsNotifier.value = settings.copyWith(
+                    useSystemColor: val,
+                  );
                 },
               ),
-              
+
               if (!settings.useSystemColor) ...[
                 const SizedBox(height: 12),
-                Text(
-                  'Manual Seed Color',
-                  style: theme.textTheme.titleSmall,
-                ),
+                Text('Manual Seed Color', style: theme.textTheme.titleSmall),
                 const SizedBox(height: 8),
                 SizedBox(
                   height: 48,
@@ -406,7 +417,9 @@ class ThemeSettingsSheet extends StatelessWidget {
                         padding: const EdgeInsets.only(right: 12),
                         child: GestureDetector(
                           onTap: () {
-                            themeSettingsNotifier.value = settings.copyWith(seedColor: entry.value);
+                            themeSettingsNotifier.value = settings.copyWith(
+                              seedColor: entry.value,
+                            );
                           },
                           child: Container(
                             width: 38,
@@ -436,14 +449,13 @@ class ThemeSettingsSheet extends StatelessWidget {
                       value: settings.variant,
                       onChanged: (val) {
                         if (val != null) {
-                          themeSettingsNotifier.value = settings.copyWith(variant: val);
+                          themeSettingsNotifier.value = settings.copyWith(
+                            variant: val,
+                          );
                         }
                       },
                       items: M3EColorVariant.values.map((v) {
-                        return DropdownMenuItem(
-                          value: v,
-                          child: Text(v.name),
-                        );
+                        return DropdownMenuItem(value: v, child: Text(v.name));
                       }).toList(),
                     ),
                   ],
@@ -460,7 +472,9 @@ class ThemeSettingsSheet extends StatelessWidget {
                         divisions: 8,
                         label: settings.contrastLevel.toStringAsFixed(2),
                         onChanged: (val) {
-                          themeSettingsNotifier.value = settings.copyWith(contrastLevel: val);
+                          themeSettingsNotifier.value = settings.copyWith(
+                            contrastLevel: val,
+                          );
                         },
                       ),
                     ),
